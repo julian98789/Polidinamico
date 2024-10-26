@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, UserCircle, Building, Mail, Lock, ArrowRight } from 'lucide-react';
+import { registerUser } from '../services/api';
 
 type UserType = 'docentes' | 'estudiantes' | 'empleados';
 type FormType = 'login' | 'forgotPassword' | 'register';
@@ -13,6 +14,23 @@ const App: React.FC = () => {
     setFormType('login');
   };
 
+  const handleRegisterSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget as HTMLFormElement);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+
+    // Aquí puedes agregar lógica para enviar los datos al backend.
+    console.log('Rol:', activeTab); // Envía el rol correspondiente
+    console.log('Correo:', email);
+    console.log('Contraseña:', password);
+    console.log('Confirmar Contraseña:', confirmPassword);
+
+    // Ejemplo de llamada a tu API de registro
+    // registerUser({ email, password, role: activeTab });
+  };
+
   const renderForm = (userType: UserType) => {
     if (formType === 'login') {
       return (
@@ -20,11 +38,11 @@ const App: React.FC = () => {
           <h3 className="text-xl font-semibold text-green-800 mb-4">Inicio de sesión para {userType}</h3>
           <div className="relative">
             <Mail className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="email" name="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
           </div>
           <div className="relative">
             <Lock className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="password" name="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
           </div>
           <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
             Iniciar sesión <ArrowRight className="ml-2" size={20} />
@@ -51,20 +69,21 @@ const App: React.FC = () => {
       );
     } else {
       return (
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleRegisterSubmit}>
           <h3 className="text-xl font-semibold text-green-800 mb-4">Registro de {userType}</h3>
           <div className="relative">
             <Mail className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="email" name="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
           </div>
           <div className="relative">
             <Lock className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="password" name="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
           </div>
           <div className="relative">
             <Lock className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="password" placeholder="Confirmar contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="password" name="confirmPassword" placeholder="Confirmar contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
           </div>
+          <input type="hidden" name="role" value={activeTab} /> {/* Campo oculto para el rol */}
           <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
             Registrarse <ArrowRight className="ml-2" size={20} />
           </button>
