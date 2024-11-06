@@ -21,10 +21,8 @@ const App: React.FC = () => {
   // Función para enviar el formulario de registro
   const handleRegister = async () => {
     try {
-      // Define el rol según la pestaña activa
       const role = activeTab === 'docentes' ? 'TEACHERS' : activeTab === 'estudiantes' ? 'STUDENTS' : 'EMPLOYEES';
       
-      // Envía la solicitud al backend con el rol y otros campos del formulario
       const response = await axios.post('http://localhost:8080/api/register', {
         email,
         password,
@@ -41,7 +39,6 @@ const App: React.FC = () => {
     try {
       const role = activeTab === 'docentes' ? 'TEACHERS' : activeTab === 'estudiantes' ? 'STUDENTS' : 'EMPLOYEES';
       
-      // Verificación de rol antes de iniciar sesión
       const response = await axios.post('http://localhost:8080/api/login', {
         email,
         password,
@@ -70,7 +67,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Renderizar el formulario según el tipo y la pestaña activa
   const renderForm = () => {
     if (formType === 'login') {
       return (
