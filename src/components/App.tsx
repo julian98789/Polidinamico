@@ -1,6 +1,6 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { User, UserCircle, Building, Mail, Lock, ArrowRight } from 'lucide-react';
-import { registerUser } from '../services/api';
 
 type UserType = 'docentes' | 'estudiantes' | 'empleados';
 type FormType = 'login' | 'forgotPassword' | 'register';
@@ -8,41 +8,81 @@ type FormType = 'login' | 'forgotPassword' | 'register';
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<UserType>('docentes');
   const [formType, setFormType] = useState<FormType>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Función para cambiar de pestaña y restablecer el formulario a "login"
   const handleTabChange = (newTab: UserType) => {
     setActiveTab(newTab);
     setFormType('login');
   };
 
-  const handleRegisterSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget as HTMLFormElement);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
-
-    // Aquí puedes agregar lógica para enviar los datos al backend.
-    console.log('Rol:', activeTab); // Envía el rol correspondiente
-    console.log('Correo:', email);
-    console.log('Contraseña:', password);
-    console.log('Confirmar Contraseña:', confirmPassword);
-
-    // Ejemplo de llamada a tu API de registro
-    // registerUser({ email, password, role: activeTab });
+  // Función para enviar el formulario de registro
+  const handleRegister = async () => {
+    try {
+      // Define el rol según la pestaña activa
+      const role = activeTab === 'docentes' ? 'TEACHERS' : activeTab === 'estudiantes' ? 'STUDENTS' : 'EMPLOYEES';
+      
+      // Envía la solicitud al backend con el rol y otros campos del formulario
+      const response = await axios.post('http://localhost:8080/api/register', {
+        email,
+        password,
+        role,
+      });
+      alert(`Registro exitoso para ${role}!`);
+    } catch (error) {
+      alert('Error al registrarse.');
+    }
   };
 
-  const renderForm = (userType: UserType) => {
+  // Función para enviar el formulario de inicio de sesión
+  const handleLogin = async () => {
+    try {
+      const role = activeTab === 'docentes' ? 'TEACHERS' : activeTab === 'estudiantes' ? 'STUDENTS' : 'EMPLOYEES';
+      
+      // Verificación de rol antes de iniciar sesión
+      const response = await axios.post('http://localhost:8080/api/login', {
+        email,
+        password,
+      });
+
+      if (response.data.role !== role) {
+        alert('El rol no coincide con el formulario en el que estás logueado.');
+        return;
+      }
+
+      alert('Inicio de sesión exitoso!');
+    } catch (error) {
+      alert('Error al iniciar sesión.');
+    }
+  };
+
+  // Función para enviar el formulario de recuperación de contraseña
+  const handleForgotPassword = async () => {
+    try {
+      const response = await axios.post('http://localhost:8080/api/forgot-password', {
+        email,
+      });
+      alert(` ${response.data}`);
+    } catch (error) {
+      alert('Correo no encontrado.');
+    }
+  };
+
+  // Renderizar el formulario según el tipo y la pestaña activa
+  const renderForm = () => {
     if (formType === 'login') {
       return (
-        <form className="space-y-4">
-          <h3 className="text-xl font-semibold text-green-800 mb-4">Inicio de sesión para {userType}</h3>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+          <h3 className="text-xl font-semibold text-green-800 mb-4">Inicio de sesión para {activeTab}</h3>
           <div className="relative">
             <Mail className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="email" name="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="relative">
             <Lock className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="password" name="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
             Iniciar sesión <ArrowRight className="ml-2" size={20} />
@@ -55,11 +95,11 @@ const App: React.FC = () => {
       );
     } else if (formType === 'forgotPassword') {
       return (
-        <form className="space-y-4">
-          <h3 className="text-xl font-semibold text-green-800 mb-4">Recuperar contraseña para {userType}</h3>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleForgotPassword(); }}>
+          <h3 className="text-xl font-semibold text-green-800 mb-4">Recuperar contraseña para {activeTab}</h3>
           <div className="relative">
             <Mail className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
             Enviar instrucciones <ArrowRight className="ml-2" size={20} />
@@ -69,21 +109,16 @@ const App: React.FC = () => {
       );
     } else {
       return (
-        <form className="space-y-4" onSubmit={handleRegisterSubmit}>
-          <h3 className="text-xl font-semibold text-green-800 mb-4">Registro de {userType}</h3>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleRegister(); }}>
+          <h3 className="text-xl font-semibold text-green-800 mb-4">Registro de {activeTab}</h3>
           <div className="relative">
             <Mail className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="email" name="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="email" placeholder="Correo electrónico" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="relative">
             <Lock className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="password" name="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
+            <input type="password" placeholder="Contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-          <div className="relative">
-            <Lock className="absolute top-3 left-3 text-green-600" size={20} />
-            <input type="password" name="confirmPassword" placeholder="Confirmar contraseña" className="pl-10 w-full py-2 border-b border-green-300 focus:border-yellow-400 bg-transparent text-green-800 outline-none" required />
-          </div>
-          <input type="hidden" name="role" value={activeTab} /> {/* Campo oculto para el rol */}
           <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
             Registrarse <ArrowRight className="ml-2" size={20} />
           </button>
@@ -120,7 +155,7 @@ const App: React.FC = () => {
             <Building className="mr-2" size={18} /> Empleados
           </button>
         </div>
-        {renderForm(activeTab)}
+        {renderForm()}
       </div>
     </div>
   );
