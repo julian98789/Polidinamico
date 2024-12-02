@@ -1,6 +1,9 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { User, UserCircle, Building, Mail, Lock, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom'; // Importamos Routes y Route
+import EstudiantesPage from './EstudiantesPage'; // Asegúrate de importar la página de estudiantes
 
 type UserType = 'docentes' | 'estudiantes' | 'empleados';
 type FormType = 'login' | 'forgotPassword' | 'register';
@@ -12,26 +15,12 @@ const App: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const navigate = useNavigate();
+
   // Función para cambiar de pestaña y restablecer el formulario a "login"
   const handleTabChange = (newTab: UserType) => {
     setActiveTab(newTab);
     setFormType('login');
-  };
-
-  // Función para enviar el formulario de registro
-  const handleRegister = async () => {
-    try {
-      const role = activeTab === 'docentes' ? 'TEACHERS' : activeTab === 'estudiantes' ? 'STUDENTS' : 'EMPLOYEES';
-      
-      const response = await axios.post('http://localhost:8080/api/register', {
-        email,
-        password,
-        role,
-      });
-      alert(`Registro exitoso para ${role}!`);
-    } catch (error) {
-      alert('Error al registrarse.');
-    }
   };
 
   // Función para enviar el formulario de inicio de sesión
@@ -50,8 +39,30 @@ const App: React.FC = () => {
       }
 
       alert('Inicio de sesión exitoso!');
+      
+      // Redirige a la página de estudiantes si el rol es "STUDENTS"
+      if (role === 'STUDENTS') {
+        navigate('/estudiantes');  // Redirige a la página de estudiantes
+      }
+
     } catch (error) {
       alert('Error al iniciar sesión.');
+    }
+  };
+
+  // Función para enviar el formulario de registro
+  const handleRegister = async () => {
+    try {
+      const role = activeTab === 'docentes' ? 'TEACHERS' : activeTab === 'estudiantes' ? 'STUDENTS' : 'EMPLOYEES';
+      
+      const response = await axios.post('http://localhost:8080/api/register', {
+        email,
+        password,
+        role,
+      });
+      alert(`Registro exitoso para ${role}!`);
+    } catch (error) {
+      alert('Error al registrarse.');
     }
   };
 
@@ -61,12 +72,13 @@ const App: React.FC = () => {
       const response = await axios.post('http://localhost:8080/api/forgot-password', {
         email,
       });
-      alert(` ${response.data}`);
+      alert(`${response.data}`);
     } catch (error) {
       alert('Correo no encontrado.');
     }
   };
 
+  // Renderizar formulario según el tipo de formulario
   const renderForm = () => {
     if (formType === 'login') {
       return (
@@ -125,35 +137,40 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-green-100 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white bg-opacity-80 backdrop-blur-lg rounded-3xl shadow-xl p-10">
-        <header className="text-center">
-          <h1 className="text-3xl font-bold text-green-800 mb-2">Politécnico Colombiano</h1>
-          <h2 className="text-xl font-semibold text-yellow-600">Jaime Isaza Cadavid</h2>
-        </header>
-        <div className="flex justify-center space-x-4 mb-8">
-          <button
-            className={`flex items-center px-4 py-2 rounded-full transition duration-300 ${activeTab === 'docentes' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}
-            onClick={() => handleTabChange('docentes')}
-          >
-            <User className="mr-2" size={18} /> Docentes
-          </button>
-          <button
-            className={`flex items-center px-4 py-2 rounded-full transition duration-300 ${activeTab === 'estudiantes' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}
-            onClick={() => handleTabChange('estudiantes')}
-          >
-            <UserCircle className="mr-2" size={18} /> Estudiantes
-          </button>
-          <button
-            className={`flex items-center px-4 py-2 rounded-full transition duration-300 ${activeTab === 'empleados' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}
-            onClick={() => handleTabChange('empleados')}
-          >
-            <Building className="mr-2" size={18} /> Empleados
-          </button>
+    <Routes>
+      <Route path="/" element={(
+        <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-green-100 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full space-y-8 bg-white bg-opacity-80 backdrop-blur-lg rounded-3xl shadow-xl p-10">
+            <header className="text-center">
+              <h1 className="text-3xl font-bold text-green-800 mb-2">Politécnico Colombiano</h1>
+              <h2 className="text-xl font-semibold text-yellow-600">Jaime Isaza Cadavid</h2>
+            </header>
+            <div className="flex justify-center space-x-4 mb-8">
+              <button
+                className={`flex items-center px-4 py-2 rounded-full transition duration-300 ${activeTab === 'docentes' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}
+                onClick={() => handleTabChange('docentes')}
+              >
+                <User className="mr-2" size={18} /> Docentes
+              </button>
+              <button
+                className={`flex items-center px-4 py-2 rounded-full transition duration-300 ${activeTab === 'estudiantes' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}
+                onClick={() => handleTabChange('estudiantes')}
+              >
+                <UserCircle className="mr-2" size={18} /> Estudiantes
+              </button>
+              <button
+                className={`flex items-center px-4 py-2 rounded-full transition duration-300 ${activeTab === 'empleados' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}
+                onClick={() => handleTabChange('empleados')}
+              >
+                <Building className="mr-2" size={18} /> Empleados
+              </button>
+            </div>
+            {renderForm()}
+          </div>
         </div>
-        {renderForm()}
-      </div>
-    </div>
+      )} />
+      <Route path="/estudiantes" element={<EstudiantesPage />} />  {/* Página de Estudiantes */}
+    </Routes>
   );
 };
 
